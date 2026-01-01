@@ -27,6 +27,44 @@ const App: React.FC = () => {
   // Track which field is focused to add a glow effect
   const [activeField, setActiveField] = useState<keyof MetricTime | null>(null);
 
+  // --- URL Parameter Handling ---
+  const parseUrlParams = (): MetricTime | null => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const qParam = urlParams.get('q');
+
+    if (!qParam) {
+      return null;
+    }
+
+    // Split the q parameter by hyphens
+    const parts = qParam.split('-');
+    if (parts.length !== 4) {
+      return null;
+    }
+
+    const [yyStr, dddStr, hhStr, mmmStr] = parts;
+    const yy = parseInt(yyStr);
+    const ddd = parseInt(dddStr);
+    const hh = parseInt(hhStr);
+    const mmm = parseInt(mmmStr);
+
+    // Validate that all parameters are valid numbers
+    if (isNaN(yy) || isNaN(ddd) || isNaN(hh) || isNaN(mmm)) {
+      return null;
+    }
+
+    return { yy, ddd, hh, mmm };
+  };
+
+  const updateUrlParams = (time: MetricTime) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const qValue = `${time.yy}-${String(time.ddd).padStart(3, '0')}-${String(time.hh).padStart(2, '0')}-${String(time.mmm).padStart(3, '0')}`;
+    urlParams.set('q', qValue);
+
+    const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+    window.history.replaceState({}, '', newUrl);
+  };
+
   // --- Logic ---
 
   const metricToDate = (y: number, d: number, h: number, m: number): Date => {
@@ -58,15 +96,29 @@ const App: React.FC = () => {
     const newMetric = { ...metric, [field]: val };
     setMetric(newMetric);
     setDateObj(metricToDate(newMetric.yy, newMetric.ddd, newMetric.hh, newMetric.mmm));
+    updateUrlParams(newMetric);
   };
 
   const setNow = () => {
     const now = new Date();
-    setMetric(dateToMetric(now));
+    const newMetric = dateToMetric(now);
+    setMetric(newMetric);
     setDateObj(now);
+    updateUrlParams(newMetric);
   };
 
-  useEffect(() => { setNow(); }, []);
+  useEffect(() => {
+    // Check if URL parameters are present
+    const urlParams = parseUrlParams();
+    if (urlParams) {
+      // Use URL parameters to set the initial time
+      setMetric(urlParams);
+      setDateObj(metricToDate(urlParams.yy, urlParams.ddd, urlParams.hh, urlParams.mmm));
+    } else {
+      // Default to current time if no URL parameters
+      setNow();
+    }
+  }, []);
 
   // --- Helpers ---
 
@@ -114,6 +166,7 @@ const App: React.FC = () => {
       const newMetric = { ...metric, [field]: clampedValue };
       setMetric(newMetric);
       setDateObj(metricToDate(newMetric.yy, newMetric.ddd, newMetric.hh, newMetric.mmm));
+      updateUrlParams(newMetric);
     };
 
     const decreaseValue = () => {
