@@ -151,27 +151,27 @@ const App: React.FC = () => {
     };
 
     return (
-      <div className="flex flex-col items-center gap-1 mt-2">
+      <div className="flex gap-0.5 mt-1">
         <button
-          onClick={increaseValue}
-          className="w-6 h-6 flex items-center justify-center text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md transition-colors"
-          aria-label={`Increase ${field}`}
+          onClick={decreaseValue}
+          className="w-5 h-5 flex items-center justify-center text-[8px] bg-slate-800/50 hover:bg-slate-700/70 border border-slate-700 rounded-sm transition-colors text-slate-300 hover:text-slate-100"
+          aria-label={`Decrease ${field}`}
         >
-          +
+          -
         </button>
         <button
           onClick={zeroValue}
-          className="w-6 h-6 flex items-center justify-center text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md transition-colors"
+          className="w-5 h-5 flex items-center justify-center text-[8px] bg-slate-800/50 hover:bg-slate-700/70 border border-slate-700 rounded-sm transition-colors text-slate-300 hover:text-slate-100"
           aria-label={`Zero ${field}`}
         >
           z
         </button>
         <button
-          onClick={decreaseValue}
-          className="w-6 h-6 flex items-center justify-center text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md transition-colors"
-          aria-label={`Decrease ${field}`}
+          onClick={increaseValue}
+          className="w-5 h-5 flex items-center justify-center text-[8px] bg-slate-800/50 hover:bg-slate-700/70 border border-slate-700 rounded-sm transition-colors text-slate-300 hover:text-slate-100"
+          aria-label={`Increase ${field}`}
         >
-          -
+          +
         </button>
       </div>
     );
@@ -230,7 +230,9 @@ const App: React.FC = () => {
                     className={`bg-transparent text-3xl md:text-6xl font-bold w-[1.5em] md:w-[1.2em] text-center outline-none transition-colors duration-300
                       ${activeField === 'yy' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-slate-100'}`}
                   />
-                  <ControlButtons field="yy" value={metric.yy} />
+                  <div className="mt-1">
+                    <ControlButtons field="yy" value={metric.yy} />
+                  </div>
                 </div>
 
                 <Separator />
@@ -246,7 +248,9 @@ const App: React.FC = () => {
                     className={`bg-transparent text-3xl md:text-6xl font-bold w-[1.8em] text-center outline-none transition-colors duration-300
                       ${activeField === 'ddd' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-slate-100'}`}
                   />
-                  <ControlButtons field="ddd" value={metric.ddd} />
+                  <div className="mt-1">
+                    <ControlButtons field="ddd" value={metric.ddd} />
+                  </div>
                 </div>
 
                 <Separator />
@@ -262,7 +266,9 @@ const App: React.FC = () => {
                     className={`bg-transparent text-3xl md:text-6xl font-bold w-[1.3em] text-center outline-none transition-colors duration-300
                       ${activeField === 'hh' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-slate-100'}`}
                   />
-                  <ControlButtons field="hh" value={metric.hh} />
+                  <div className="mt-1">
+                    <ControlButtons field="hh" value={metric.hh} />
+                  </div>
                 </div>
 
                 <Separator />
@@ -278,13 +284,15 @@ const App: React.FC = () => {
                     className={`bg-transparent text-3xl md:text-6xl font-bold w-[1.8em] text-center outline-none transition-colors duration-300
                       ${activeField === 'mmm' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-slate-100'}`}
                   />
-                  <ControlButtons field="mmm" value={metric.mmm} />
+                  <div className="mt-1">
+                    <ControlButtons field="mmm" value={metric.mmm} />
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Field Labels below inputs */}
-            <div className="flex w-full justify-center gap-1 md:gap-2 mt-8 md:mt-4 opacity-40 text-[10px] md:text-xs font-bold tracking-widest uppercase select-none">
+            <div className="flex w-full justify-center gap-1 md:gap-2 mt-6 md:mt-4 opacity-40 text-[10px] md:text-xs font-bold tracking-widest uppercase select-none">
               <div className="flex flex-col items-center">
                 <span className="w-[1.5em] md:w-[1.2em] text-center">YY</span>
               </div>
