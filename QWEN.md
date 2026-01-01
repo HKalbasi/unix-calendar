@@ -35,3 +35,4 @@ A React-based Unix time calendar that displays time in a metric format (YY-DDD-H
 ## Notes
 
 * Don't use `npm run dev` for testing, ask the user for test and feedback.
+* I use jj instead of git, don't use git commands or try to initialize a git repository.
