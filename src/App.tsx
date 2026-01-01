@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, RotateCcw, Monitor, ChevronRight, Calendar } from 'lucide-react';
+import { Clock, RotateCcw, Monitor, Calendar } from 'lucide-react';
 
 // --- Types ---
 interface MetricTime {
@@ -80,28 +80,6 @@ const App: React.FC = () => {
     return `${base}-${pad(h, 2)}-${pad(m, 3)}`;
   };
 
-  // --- Navigation Logic ---
-
-  const navigateMetric = (deltaYY: number, deltaDDD: number) => {
-    let newYY = metric.yy + deltaYY;
-    let newDDD = metric.ddd + deltaDDD;
-
-    if (newDDD >= 1000) {
-      newYY += Math.floor(newDDD / 1000);
-      newDDD = newDDD % 1000;
-    } else if (newDDD < 0) {
-      const yearsToBorrow = Math.ceil(Math.abs(newDDD) / 1000);
-      newYY -= yearsToBorrow;
-      newDDD = newDDD + (yearsToBorrow * 1000);
-    }
-
-    // When navigating by day/week, we usually reset hour/sec to 0 for cleanliness, 
-    // unless you want to preserve the exact time. Let's reset for cleaner "jumps".
-    const newMetric = { yy: newYY, ddd: newDDD, hh: 0, mmm: 0 };
-    setMetric(newMetric);
-    setDateObj(metricToDate(newYY, newDDD, 0, 0));
-  };
-
   const getMetricWeek = (): MetricWeekDay[] => {
     const startDay = Math.floor(metric.ddd / 10) * 10;
     return Array.from({ length: 10 }, (_, i) => {
@@ -176,23 +154,6 @@ const App: React.FC = () => {
       </div>
     );
   };
-
-  // Reusable Nav Button
-  const NavButton = ({ label, subLabel, metricLabel, onClick, highlight = false }: any) => (
-    <button
-      onClick={onClick}
-      className={`relative overflow-hidden group p-3 rounded-xl border transition-all duration-300 flex flex-col items-center justify-center text-center h-full
-        ${highlight
-          ? 'bg-emerald-950/30 border-emerald-500/50 hover:bg-emerald-900/40 hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]'
-          : 'bg-slate-900/80 border-slate-800 hover:border-slate-600 hover:bg-slate-800'
-        }`}
-    >
-      <span className={`text-lg font-mono font-bold tracking-tight ${highlight ? 'text-emerald-400' : 'text-slate-200'}`}>
-        {metricLabel}
-      </span>
-      {subLabel && <span className="text-[10px] text-slate-500 uppercase tracking-wider mt-1 font-bold">{subLabel}</span>}
-    </button>
-  );
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-mono selection:bg-emerald-500/30 flex flex-col items-center pt-12 md:pt-24 px-4 pb-12 relative overflow-x-hidden">
@@ -353,15 +314,14 @@ const App: React.FC = () => {
       <section className="w-full max-w-4xl mt-16 z-10">
         <div className="flex items-center gap-4 mb-6">
           <div className="h-px bg-slate-800 flex-1"></div>
-          <h3 className="text-slate-500 text-xs font-black uppercase tracking-[0.3em]">Temporal Navigation</h3>
+          <h3 className="text-slate-500 text-xs font-black uppercase tracking-[0.3em]">
+            Metric Week {Math.floor(metric.ddd / 10)} (Days {Math.floor(metric.ddd / 10) * 10} - {Math.floor(metric.ddd / 10) * 10 + 9})
+          </h3>
           <div className="h-px bg-slate-800 flex-1"></div>
         </div>
 
         {/* Metric Week Strip */}
         <div className="mb-8">
-          <div className="text-center text-[10px] text-slate-500 uppercase tracking-widest mb-3">
-            Metric Week {Math.floor(metric.ddd / 10)} (Days {Math.floor(metric.ddd / 10) * 10} - {Math.floor(metric.ddd / 10) * 10 + 9})
-          </div>
           <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
             {getMetricWeek().map((item) => (
               <button
@@ -378,52 +338,6 @@ const App: React.FC = () => {
               </button>
             ))}
           </div>
-        </div>
-
-        {/* Control Deck */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <NavButton
-            metricLabel={formatMetricString(metric.yy, metric.ddd - 10)}
-            subLabel="Prev Week"
-            onClick={() => navigateMetric(0, -10)}
-          />
-          <NavButton
-            metricLabel={formatMetricString(metric.yy, metric.ddd + 10)}
-            subLabel="Next Week"
-            onClick={() => navigateMetric(0, 10)}
-          />
-          <NavButton
-            metricLabel={formatMetricString(metric.yy, metric.ddd - 100)}
-            subLabel="Prev Season"
-            onClick={() => navigateMetric(0, -100)}
-          />
-          <NavButton
-            metricLabel={formatMetricString(metric.yy, metric.ddd + 100)}
-            subLabel="Next Season"
-            onClick={() => navigateMetric(0, 100)}
-          />
-          <NavButton
-            metricLabel={formatMetricString(metric.yy - 1, metric.ddd)}
-            subLabel="Last Year"
-            onClick={() => navigateMetric(-1, 0)}
-          />
-          <NavButton
-            metricLabel={formatMetricString(metric.yy + 1, metric.ddd)}
-            subLabel="Next Year"
-            onClick={() => navigateMetric(1, 0)}
-          />
-          <NavButton
-            metricLabel={`${metric.yy}-000`}
-            subLabel="Year Start"
-            highlight
-            onClick={() => handleInputChange('ddd', '0')}
-          />
-          <NavButton
-            metricLabel={`${metric.yy}-999`}
-            subLabel="Year End"
-            highlight
-            onClick={() => handleInputChange('ddd', '999')}
-          />
         </div>
       </section>
     </div>
