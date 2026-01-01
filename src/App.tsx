@@ -220,7 +220,7 @@ const App: React.FC = () => {
         {/* Header Label */}
         <div className="flex items-center gap-2 mb-4 opacity-70">
           <Monitor className="w-4 h-4 text-emerald-500" />
-          <span className="text-xs font-bold tracking-[0.3em] text-emerald-500 uppercase">Unix Metric Interface</span>
+          <span className="text-xs font-bold tracking-[0.3em] text-emerald-500 uppercase">Unix Calendar</span>
         </div>
 
         {/* THE BIG INPUT BAR */}
