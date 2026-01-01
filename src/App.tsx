@@ -161,7 +161,6 @@ const App: React.FC = () => {
       if (field === 'hh' && clampedValue < 0) clampedValue = 0;
       if (field === 'mmm' && clampedValue > 999) clampedValue = 999;
       if (field === 'mmm' && clampedValue < 0) clampedValue = 0;
-      if (field === 'yy' && clampedValue < 0) clampedValue = 0; // Year should not be negative
 
       const newMetric = { ...metric, [field]: clampedValue };
       setMetric(newMetric);
@@ -235,15 +234,16 @@ const App: React.FC = () => {
               <div className="flex items-baseline justify-center gap-1 md:gap-2 w-full">
                 {/* YY */}
                 <div className="flex flex-col items-center">
-                  <input
-                    type="number"
-                    value={pad(metric.yy, 0)} // No padding on visual value for year to prevent "02026", but handled by formatter elsewhere
-                    onChange={(e) => handleInputChange('yy', e.target.value)}
+                  <div
+                    // type="number"
+                    //onChange={(e) => handleInputChange('yy', e.target.value)}
                     onFocus={() => setActiveField('yy')}
                     onBlur={() => setActiveField(null)}
-                    className={`bg-transparent text-3xl md:text-6xl font-bold w-[1.5em] md:w-[1.2em] text-center outline-none transition-colors duration-300
+                    className={`bg-transparent text-3xl md:text-6xl font-bold w-fit p-0 box-content text-center outline-none transition-colors duration-300
                       ${activeField === 'yy' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-slate-100'}`}
-                  />
+                  >
+                    {pad(metric.yy, 0)}
+                  </div>
                   <div className="mt-1">
                     <ControlButtons field="yy" value={metric.yy} />
                   </div>
