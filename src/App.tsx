@@ -120,6 +120,63 @@ const App: React.FC = () => {
 
   const Separator = () => <span className="text-slate-600 text-3xl md:text-5xl font-light select-none pb-2">-</span>;
 
+  // Reusable Control Buttons for each field
+  const ControlButtons = ({ field, value }: { field: keyof MetricTime, value: number }) => {
+    const updateField = (newValue: number) => {
+      // Apply clamping based on field type
+      let clampedValue = newValue;
+      if (field === 'ddd' && clampedValue > 999) clampedValue = 999;
+      if (field === 'ddd' && clampedValue < 0) clampedValue = 0;
+      if (field === 'hh' && clampedValue > 99) clampedValue = 99;
+      if (field === 'hh' && clampedValue < 0) clampedValue = 0;
+      if (field === 'mmm' && clampedValue > 999) clampedValue = 999;
+      if (field === 'mmm' && clampedValue < 0) clampedValue = 0;
+      if (field === 'yy' && clampedValue < 0) clampedValue = 0; // Year should not be negative
+
+      const newMetric = { ...metric, [field]: clampedValue };
+      setMetric(newMetric);
+      setDateObj(metricToDate(newMetric.yy, newMetric.ddd, newMetric.hh, newMetric.mmm));
+    };
+
+    const decreaseValue = () => {
+      updateField(value - 1);
+    };
+
+    const increaseValue = () => {
+      updateField(value + 1);
+    };
+
+    const zeroValue = () => {
+      updateField(0);
+    };
+
+    return (
+      <div className="flex flex-col items-center gap-1 mt-2">
+        <button
+          onClick={increaseValue}
+          className="w-6 h-6 flex items-center justify-center text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md transition-colors"
+          aria-label={`Increase ${field}`}
+        >
+          +
+        </button>
+        <button
+          onClick={zeroValue}
+          className="w-6 h-6 flex items-center justify-center text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md transition-colors"
+          aria-label={`Zero ${field}`}
+        >
+          z
+        </button>
+        <button
+          onClick={decreaseValue}
+          className="w-6 h-6 flex items-center justify-center text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-md transition-colors"
+          aria-label={`Decrease ${field}`}
+        >
+          -
+        </button>
+      </div>
+    );
+  };
+
   // Reusable Nav Button
   const NavButton = ({ label, subLabel, metricLabel, onClick, highlight = false }: any) => (
     <button
@@ -160,68 +217,89 @@ const App: React.FC = () => {
           <div className="relative bg-slate-950 border border-slate-800 rounded-2xl p-6 md:p-10 shadow-2xl flex flex-col items-center justify-center">
 
             {/* The Input Row */}
-            <div className="flex items-baseline justify-center gap-1 md:gap-2 w-full">
+            <div className="flex flex-col items-center justify-center w-full">
+              <div className="flex items-baseline justify-center gap-1 md:gap-2 w-full">
+                {/* YY */}
+                <div className="flex flex-col items-center">
+                  <input
+                    type="number"
+                    value={pad(metric.yy, 0)} // No padding on visual value for year to prevent "02026", but handled by formatter elsewhere
+                    onChange={(e) => handleInputChange('yy', e.target.value)}
+                    onFocus={() => setActiveField('yy')}
+                    onBlur={() => setActiveField(null)}
+                    className={`bg-transparent text-3xl md:text-6xl font-bold w-[1.5em] md:w-[1.2em] text-center outline-none transition-colors duration-300
+                      ${activeField === 'yy' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-slate-100'}`}
+                  />
+                  <ControlButtons field="yy" value={metric.yy} />
+                </div>
 
-              {/* YY */}
-              <input
-                type="number"
-                value={pad(metric.yy, 0)} // No padding on visual value for year to prevent "02026", but handled by formatter elsewhere
-                onChange={(e) => handleInputChange('yy', e.target.value)}
-                onFocus={() => setActiveField('yy')}
-                onBlur={() => setActiveField(null)}
-                className={`bg-transparent text-3xl md:text-6xl font-bold w-[1.5em] md:w-[1.2em] text-center outline-none transition-colors duration-300
-                  ${activeField === 'yy' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-slate-100'}`}
-              />
+                <Separator />
 
-              <Separator />
+                {/* DDD */}
+                <div className="flex flex-col items-center">
+                  <input
+                    type="number"
+                    value={pad(metric.ddd, 3)}
+                    onChange={(e) => handleInputChange('ddd', e.target.value)}
+                    onFocus={() => setActiveField('ddd')}
+                    onBlur={() => setActiveField(null)}
+                    className={`bg-transparent text-3xl md:text-6xl font-bold w-[1.8em] text-center outline-none transition-colors duration-300
+                      ${activeField === 'ddd' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-slate-100'}`}
+                  />
+                  <ControlButtons field="ddd" value={metric.ddd} />
+                </div>
 
-              {/* DDD */}
-              <input
-                type="number"
-                value={pad(metric.ddd, 3)}
-                onChange={(e) => handleInputChange('ddd', e.target.value)}
-                onFocus={() => setActiveField('ddd')}
-                onBlur={() => setActiveField(null)}
-                className={`bg-transparent text-3xl md:text-6xl font-bold w-[1.8em] text-center outline-none transition-colors duration-300
-                  ${activeField === 'ddd' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-slate-100'}`}
-              />
+                <Separator />
 
-              <Separator />
+                {/* HH */}
+                <div className="flex flex-col items-center">
+                  <input
+                    type="number"
+                    value={pad(metric.hh, 2)}
+                    onChange={(e) => handleInputChange('hh', e.target.value)}
+                    onFocus={() => setActiveField('hh')}
+                    onBlur={() => setActiveField(null)}
+                    className={`bg-transparent text-3xl md:text-6xl font-bold w-[1.3em] text-center outline-none transition-colors duration-300
+                      ${activeField === 'hh' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-slate-100'}`}
+                  />
+                  <ControlButtons field="hh" value={metric.hh} />
+                </div>
 
-              {/* HH */}
-              <input
-                type="number"
-                value={pad(metric.hh, 2)}
-                onChange={(e) => handleInputChange('hh', e.target.value)}
-                onFocus={() => setActiveField('hh')}
-                onBlur={() => setActiveField(null)}
-                className={`bg-transparent text-3xl md:text-6xl font-bold w-[1.3em] text-center outline-none transition-colors duration-300
-                  ${activeField === 'hh' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-slate-100'}`}
-              />
+                <Separator />
 
-              <Separator />
-
-              {/* mmm */}
-              <input
-                type="number"
-                value={pad(metric.mmm, 3)}
-                onChange={(e) => handleInputChange('mmm', e.target.value)}
-                onFocus={() => setActiveField('mmm')}
-                onBlur={() => setActiveField(null)}
-                className={`bg-transparent text-3xl md:text-6xl font-bold w-[1.8em] text-center outline-none transition-colors duration-300
-                  ${activeField === 'mmm' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-slate-100'}`}
-              />
+                {/* mmm */}
+                <div className="flex flex-col items-center">
+                  <input
+                    type="number"
+                    value={pad(metric.mmm, 3)}
+                    onChange={(e) => handleInputChange('mmm', e.target.value)}
+                    onFocus={() => setActiveField('mmm')}
+                    onBlur={() => setActiveField(null)}
+                    className={`bg-transparent text-3xl md:text-6xl font-bold w-[1.8em] text-center outline-none transition-colors duration-300
+                      ${activeField === 'mmm' ? 'text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]' : 'text-slate-100'}`}
+                  />
+                  <ControlButtons field="mmm" value={metric.mmm} />
+                </div>
+              </div>
             </div>
 
             {/* Field Labels below inputs */}
-            <div className="flex w-full justify-center gap-1 md:gap-2 mt-2 md:mt-4 opacity-40 text-[10px] md:text-xs font-bold tracking-widest uppercase select-none">
-              <span className="w-[1.5em] md:w-[1.2em] text-center">YY</span>
+            <div className="flex w-full justify-center gap-1 md:gap-2 mt-8 md:mt-4 opacity-40 text-[10px] md:text-xs font-bold tracking-widest uppercase select-none">
+              <div className="flex flex-col items-center">
+                <span className="w-[1.5em] md:w-[1.2em] text-center">YY</span>
+              </div>
               <span className="w-[1em] text-center"></span>
-              <span className="w-[1.8em] text-center">DDD</span>
+              <div className="flex flex-col items-center">
+                <span className="w-[1.8em] text-center">DDD</span>
+              </div>
               <span className="w-[1em] text-center"></span>
-              <span className="w-[1.3em] text-center">HH</span>
+              <div className="flex flex-col items-center">
+                <span className="w-[1.3em] text-center">HH</span>
+              </div>
               <span className="w-[1em] text-center"></span>
-              <span className="w-[1.8em] text-center">mmm</span>
+              <div className="flex flex-col items-center">
+                <span className="w-[1.8em] text-center">mmm</span>
+              </div>
             </div>
 
             {/* Live Button (Floating absolute in desktop, relative in mobile) */}
