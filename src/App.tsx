@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Clock, RotateCcw, Monitor, Calendar } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Clock, RotateCcw, Monitor, Calendar, Sunrise } from 'lucide-react';
+import { Coordinates, CalculationMethod, PrayerTimes } from 'adhan';
+import { timezoneCoordinates } from './timezoneCoords';
 
 // --- Types ---
 interface MetricTime {
@@ -130,6 +132,61 @@ const App: React.FC = () => {
     const base = `${y}-${pad(d, 3)}`;
     if (h === 0 && m === 0) return base;
     return `${base}-${pad(h, 2)}-${pad(m, 3)}`;
+  };
+
+  const timezone = useMemo(() => {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }, []);
+
+  const userCoords = useMemo(() => {
+    return timezoneCoordinates[timezone];
+  }, [timezone]);
+
+  const formatSunTime = (unixSeconds: number): string => {
+    const yy = Math.floor(unixSeconds / 100000000);
+    let rem = unixSeconds % 100000000;
+    const ddd = Math.floor(rem / 100000);
+    rem %= 100000;
+    const hh = Math.floor(rem / 1000);
+    const mmm = rem % 1000;
+    return `${yy}-${pad(ddd, 3)}-${pad(hh, 2)}-${pad(mmm, 3)}`;
+  };
+
+  interface SunTimeItem {
+  formatted: string;
+  unix: number;
+}
+
+const sunTimes = useMemo(() => {
+    if (!userCoords) return null;
+
+    const coords = new Coordinates(userCoords.latitude, userCoords.longitude);
+    const params = CalculationMethod.Tehran();
+    const prayerTimes = new PrayerTimes(coords, dateObj, params);
+
+    const makeItem = (unix: number): SunTimeItem => ({
+      formatted: formatSunTime(unix),
+      unix,
+    });
+
+    const midnight = new Date(dateObj);
+    midnight.setHours(0, 0, 0, 0);
+
+    return {
+      midnight: makeItem(Math.floor(midnight.getTime() / 1000)),
+      dawn: makeItem(Math.floor(prayerTimes.fajr.getTime() / 1000)),
+      sunrise: makeItem(Math.floor(prayerTimes.sunrise.getTime() / 1000)),
+      dhuhr: makeItem(Math.floor(prayerTimes.dhuhr.getTime() / 1000)),
+      sunset: makeItem(Math.floor(prayerTimes.sunset.getTime() / 1000)),
+      dusk: makeItem(Math.floor(prayerTimes.isha.getTime() / 1000)),
+    };
+  }, [userCoords, dateObj]);
+
+  const setTimeFromUnix = (unix: number) => {
+    const newMetric = dateToMetric(new Date(unix * 1000));
+    setMetric(newMetric);
+    setDateObj(new Date(unix * 1000));
+    updateUrlParams(newMetric);
   };
 
   const getMetricWeek = (): MetricWeekDay[] => {
@@ -361,6 +418,61 @@ const App: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Sun Section */}
+        {sunTimes && (
+          <div className="w-full mt-6">
+            <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl">
+              <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-3 flex items-center gap-2">
+                <Sunrise className="w-3 h-3" /> Sun Times
+              </div>
+              <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-4">
+                <button
+                  onClick={() => setTimeFromUnix(sunTimes.midnight.unix)}
+                  className="text-center p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+                >
+                  <div className="text-[10px] text-slate-500/70 uppercase tracking-wider mb-1">Midnight</div>
+                  <div className="text-lg text-slate-400 font-mono font-bold">{sunTimes.midnight.formatted}</div>
+                </button>
+                <button
+                  onClick={() => setTimeFromUnix(sunTimes.dawn.unix)}
+                  className="text-center p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+                >
+                  <div className="text-[10px] text-amber-400/70 uppercase tracking-wider mb-1">Dawn</div>
+                  <div className="text-lg text-amber-400 font-mono font-bold">{sunTimes.dawn.formatted}</div>
+                </button>
+                <button
+                  onClick={() => setTimeFromUnix(sunTimes.sunrise.unix)}
+                  className="text-center p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+                >
+                  <div className="text-[10px] text-yellow-400/70 uppercase tracking-wider mb-1">Sunrise</div>
+                  <div className="text-lg text-yellow-400 font-mono font-bold">{sunTimes.sunrise.formatted}</div>
+                </button>
+                <button
+                  onClick={() => setTimeFromUnix(sunTimes.dhuhr.unix)}
+                  className="text-center p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+                >
+                  <div className="text-[10px] text-emerald-400/70 uppercase tracking-wider mb-1">Noon</div>
+                  <div className="text-lg text-emerald-400 font-mono font-bold">{sunTimes.dhuhr.formatted}</div>
+                </button>
+                <button
+                  onClick={() => setTimeFromUnix(sunTimes.sunset.unix)}
+                  className="text-center p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+                >
+                  <div className="text-[10px] text-orange-400/70 uppercase tracking-wider mb-1">Sunset</div>
+                  <div className="text-lg text-orange-400 font-mono font-bold">{sunTimes.sunset.formatted}</div>
+                </button>
+                <button
+                  onClick={() => setTimeFromUnix(sunTimes.dusk.unix)}
+                  className="text-center p-2 rounded-lg hover:bg-slate-800/50 transition-colors"
+                >
+                  <div className="text-[10px] text-indigo-400/70 uppercase tracking-wider mb-1">Dusk</div>
+                  <div className="text-lg text-indigo-400 font-mono font-bold">{sunTimes.dusk.formatted}</div>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* --- NAVIGATION GRID --- */}
